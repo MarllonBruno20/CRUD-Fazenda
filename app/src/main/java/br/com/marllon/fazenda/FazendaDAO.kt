@@ -3,7 +3,9 @@ package br.com.marllon.fazenda
 import android.content.ContentValues
 import android.content.Context
 import android.util.Log
-import java.io.File
+import br.com.marllon.fazenda.model.BancoFazenda
+import br.com.marllon.fazenda.model.Fazenda
+import java.lang.StringBuilder
 
 class FazendaDAO(context: Context) {
 
@@ -66,35 +68,27 @@ class FazendaDAO(context: Context) {
         return linhasAfetadas > 0
     }
 
-    fun fazerBackup(context: Context) : Pair<Boolean, String?>{
+    fun fazerBackup() : String{
         val db = meuBanco.readableDatabase
-        try {
-            val query = "SELECT * FROM Fazenda"
-            val cursor = db.rawQuery(query, null)
-            val backupBuilder = StringBuilder()
+        val dados = StringBuilder()
 
-            while (cursor.moveToNext()) {
-                val registro = cursor.getString(cursor.getColumnIndexOrThrow("registro"))
-                val nome = cursor.getString(cursor.getColumnIndexOrThrow("nome"))
-                val valor = cursor.getDouble(cursor.getColumnIndexOrThrow("valor"))
-                val latitude = cursor.getDouble(cursor.getColumnIndexOrThrow("latitude"))
-                val longitude = cursor.getDouble(cursor.getColumnIndexOrThrow("longitude"))
+        val cursorFazendas = db.rawQuery("SELECT * FROM Fazenda", null)
 
-                backupBuilder.append("Registro: $registro, Nome: $nome, Valor: $valor, Latitude: $latitude, Longitude: $longitude\n")
-            }
+        dados.append("Dados da tabela Fazenda: \n\n")
+        if(cursorFazendas.moveToFirst()){
+            do{
+                dados.append("Registro: " + cursorFazendas.getString(cursorFazendas.getColumnIndexOrThrow("registro")) + "\n")
+                dados.append("Nome: " + cursorFazendas.getString(cursorFazendas.getColumnIndexOrThrow("nome")) + "\n")
+                dados.append("Valor: " + cursorFazendas.getFloat(cursorFazendas.getColumnIndexOrThrow("valor")) + "\n")
+                dados.append("Latitude: " + cursorFazendas.getFloat(cursorFazendas.getColumnIndexOrThrow("latitude")) + "\n")
+                dados.append("Longitude: " + cursorFazendas.getFloat(cursorFazendas.getColumnIndexOrThrow("longitude")) + "\n")
+                dados.append("\n")
 
-            cursor.close()
-
-            //Pegando a string de resultado e escrevendo em um arquivo
-            val backupString = backupBuilder.toString()
-            val file = File(context.filesDir, "backup_fazendas.txt")
-            file.writeText(backupString)
-
-            return true to null
-        } catch (e: InsercaoBancoException) {
-            return false to e.message
-        } finally {
-            db.close()
+            }while (cursorFazendas.moveToNext())
         }
+
+        cursorFazendas.close()
+        db.close()
+        return dados.toString()
     }
 }

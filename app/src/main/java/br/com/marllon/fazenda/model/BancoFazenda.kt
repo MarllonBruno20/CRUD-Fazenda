@@ -1,4 +1,4 @@
-package br.com.marllon.fazenda
+package br.com.marllon.fazenda.model
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase

@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import br.com.marllon.fazenda.Fazenda
+import br.com.marllon.fazenda.model.Fazenda
 import br.com.marllon.fazenda.R
 
 class AdapterFazenda(private val context : Context, private val fazenda : MutableList<Fazenda>) : RecyclerView.Adapter<AdapterFazenda.FazendaViewHolder>() {

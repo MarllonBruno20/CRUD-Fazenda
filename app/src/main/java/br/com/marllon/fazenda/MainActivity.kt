@@ -1,7 +1,9 @@
 package br.com.marllon.fazenda
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -11,20 +13,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
     private val caminhoDoArquivo = "MeuArquivo"
     private var arquivoExterno: File?=null
-
-    private val armazenamentoExternoDisponivel: Boolean get() {
-        var armazExtDispRet = false
-        val estadoDoArmazenamentoExt = Environment.getExternalStorageState()
-        if (Environment.MEDIA_MOUNTED == estadoDoArmazenamentoExt) {
-            armazExtDispRet = true
-        }
-        return(armazExtDispRet)
-    }
 
     lateinit var bt_adicionar : Button
     lateinit var bt_listar : Button
@@ -64,12 +59,25 @@ class MainActivity : AppCompatActivity() {
 
         bt_backup.setOnClickListener{
             val fazendaDAO = FazendaDAO(this)
-            val fezBackup: Pair<Boolean, String?> = fazendaDAO.fazerBackup(this)
-            if (fezBackup.first) {
-                Toast.makeText(this, "Backup concluído com sucesso", Toast.LENGTH_LONG).show()
-            } else {
-                val mensagemErro = "Erro ao fazer backup: ${fezBackup.second}"
-                Toast.makeText(this, mensagemErro, Toast.LENGTH_LONG).show()
+            val dados = fazendaDAO.fazerBackup()
+
+            val nomeDoArquivo = "meuArquivoDeTexto.txt"
+            arquivoExterno = File(getExternalFilesDir(caminhoDoArquivo), nomeDoArquivo)
+
+            try {
+                val fileOutputStream = FileOutputStream(arquivoExterno)
+                fileOutputStream.write(dados.toByteArray())
+                fileOutputStream.close()
+
+                val intent = Intent(this, BackupActivity::class.java)
+                intent.putExtra("caminhoArquivo", arquivoExterno!!.absolutePath)
+                startActivity(intent)
+
+                Toast.makeText(applicationContext, "Texto salvo com sucesso!", Toast.LENGTH_LONG)
+                    .show()
+            } catch (e: IOException) {
+                Log.i("Erro", "Erro ao salvar o arquivo: ${e.message}")
+                e.printStackTrace()
             }
         }
     }
